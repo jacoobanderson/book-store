@@ -6,8 +6,8 @@ def connectToDatabase():
     try:
         connection = connect(
             host="localhost",
-            user="root",
-            password="42s744ro",
+            user=input("Enter username: "),
+            password=getpass("Enter password"),
             database="book_store"
         )
     except Error as e:
