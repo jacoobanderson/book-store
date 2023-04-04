@@ -7,7 +7,7 @@ def connectToDatabase():
         connection = connect(
             host="localhost",
             user=input("Enter username: "),
-            password=getpass("Enter password"),
+            password=getpass("Enter password: "),
             database="book_store"
         )
     except Error as e:
@@ -16,17 +16,39 @@ def connectToDatabase():
     return connection
 
 def main():
+    isRunning = True
     connection = connectToDatabase()
+    menuOption = 0
+
     if connection:
-        testConnection(connection)
+        while isRunning:
+            if menuOption == 0:
+                menuOption = showMainMenu()
+            if menuOption == "1":
+                print(menuOption)
+            if menuOption == "q":
+                isRunning = False
+
+    # if connection:
+    #     testConnection(connection)
 
 
-def testConnection(connection):
-    with connection.cursor() as cursor:
-        bookQuery = "SELECT * FROM books"
-        cursor.execute(bookQuery)
-        result = cursor.fetchall()
-        for row in result:
-            print(row)
+# def testConnection(connection):
+#     with connection.cursor() as cursor:
+#         bookQuery = "SELECT * FROM books"
+#         cursor.execute(bookQuery)
+#         result = cursor.fetchall()
+#         for row in result:
+#             print(row)
+
+
+def showMainMenu():
+    print("***        Welcome to the online bookstore        ***\n")
+    print("1. Member Login\n")
+    print("2. New Member Registration\n")
+    print("q. Quit\n")
+
+    userInput = input()
+    return userInput
 
 main()
