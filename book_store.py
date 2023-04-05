@@ -18,6 +18,7 @@ def connectToDatabase():
 def main():
     isRunning = True
     connection = connectToDatabase()
+    # menuOption 0 is the main menu.
     menuOption = 0
 
     if connection:
@@ -25,7 +26,7 @@ def main():
             if menuOption == 0:
                 menuOption = showMainMenu()
             if menuOption == "1":
-                print(menuOption)
+                login(connection)
             if menuOption == "2":
                 createUser(connection)
                 menuOption = 0
@@ -53,6 +54,26 @@ def showMainMenu():
 
     userInput = input()
     return userInput
+
+def login(connection):
+    with connection.cursor() as cursor:
+        email = input("Enter email: ")
+        password = input("Enter password: ")
+
+        loginQuery = f"""SELECT fname, lname, address, city, state, zip, phone, email, userid, password
+        FROM members
+        WHERE email = \"{email}\" AND password = \"{password}\""""
+
+        cursor.execute(loginQuery)
+        user = cursor.fetchone()
+
+        if user is None:
+            print("Wrong credentials!")
+            showMainMenu()
+        else:
+            print(user)
+            return user
+
 
 def createUser(connection):
     print("Welcome to the Online Book store\n")
