@@ -20,30 +20,31 @@ def main():
     connection = connectToDatabase()
     # menuOption 0 is the main menu.
     menuOption = 0
+    user = {}
 
     if connection:
         while isRunning:
             if menuOption == 0:
                 menuOption = showMainMenu()
             if menuOption == "1":
-                login(connection)
+                user = login(connection)
+                if (user is None):
+                    menuOption = 0
+                else:
+                    memberOption = handleMemberOptions(connection)
+                    # If the user has entered 1 in the member menu then it puts the user in the main menu
+                    # If the user has entered 4 it logs out/exits the program.
+                    if memberOption == 1:
+                        menuOption = 0
+                    if memberOption == 4:
+                        isRunning = False
+                    
+
             if menuOption == "2":
                 createUser(connection)
                 menuOption = 0
             if menuOption == "q":
                 isRunning = False
-
-    # if connection:
-    #     testConnection(connection)
-
-
-# def testConnection(connection):
-#     with connection.cursor() as cursor:
-#         bookQuery = "SELECT * FROM books"
-#         cursor.execute(bookQuery)
-#         result = cursor.fetchall()
-#         for row in result:
-#             print(row)
 
 
 def showMainMenu():
@@ -54,6 +55,21 @@ def showMainMenu():
 
     userInput = input()
     return userInput
+
+def showMemberMenu():
+    print("1. Browse by Subject\n")
+    print("2. Search by Author\n")
+    print("3. Checkout\n")
+    print("4. Logout")
+
+    userInput = input()
+    return userInput
+
+def handleMemberOptions(connection):
+    memberOption = showMemberMenu()
+
+    if memberOption == "4":
+        return 4
 
 def login(connection):
     with connection.cursor() as cursor:
@@ -69,9 +85,7 @@ def login(connection):
 
         if user is None:
             print("Wrong credentials!")
-            showMainMenu()
         else:
-            print(user)
             return user
 
 
