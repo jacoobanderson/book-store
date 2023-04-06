@@ -31,7 +31,7 @@ def main():
                 if (user is None):
                     menuOption = 0
                 else:
-                    memberOption = handleMemberOptions(connection)
+                    memberOption = handleMemberOptions(connection, user)
                     # If the user has entered 1 in the member menu then it puts the user in the main menu
                     # If the user has entered 4 it logs out/exits the program.
                     if memberOption == 1:
@@ -65,11 +65,30 @@ def showMemberMenu():
     userInput = input()
     return userInput
 
-def handleMemberOptions(connection):
+def handleMemberOptions(connection, user):
     memberOption = showMemberMenu()
-
+    if memberOption == "1":
+        browseBySubject(connection, user)
     if memberOption == "4":
         return 4
+    
+def browseBySubject(connection, user):
+    userId = user[8]
+    subjects = getSubject(connection)
+    showSubjectChoice(subjects)
+    
+
+def getSubject(connection):
+    with connection.cursor() as cursor:
+        subjectQuery = """SELECT DISTINCT subject FROM books ORDER BY subject"""
+        cursor.execute(subjectQuery)
+        subjects = cursor.fetchall()
+        print(subjects)
+        return subjects
+
+def showSubjectChoice(subjects):
+    for count, subject in enumerate(subjects):
+        print(str(count + 1) + ". " + str(subject[0]))
 
 def login(connection):
     with connection.cursor() as cursor:
