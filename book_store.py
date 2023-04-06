@@ -76,6 +76,27 @@ def browseBySubject(connection, user):
     userId = user[8]
     subjects = getSubject(connection)
     showSubjectChoice(subjects)
+    userInput = int(input())
+    chosenSubject = subjects[userInput][0]
+    books = getBooksBySubject(connection, chosenSubject)
+
+    print(str(len(books)) + " books available on this subject.\n")
+
+    for book in books:
+        print("Author: " + book[0])
+        print("Title: " + book[1])
+        print("ISBN: " + book[2])
+        print("Price: " + str(book[3]))
+        print("Subject: " + book[4] + "\n")
+    
+def getBooksBySubject(connection, subject):
+    with connection.cursor() as cursor:
+        query = f"""SELECT author, title, isbn, price, subject FROM books WHERE subject = \"{subject}\""""
+        cursor.execute(query)
+        books = cursor.fetchall()
+        return books
+
+
     
 
 def getSubject(connection):
