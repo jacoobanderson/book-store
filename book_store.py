@@ -32,6 +32,7 @@ def main():
                     menuOption = 0
                 else:
                     memberOption = handleMemberOptions(connection, user)
+                    menuOption = 0
                     # If the user has entered 1 in the member menu then it puts the user in the main menu
                     # If the user has entered 4 it logs out/exits the program.
                     if memberOption == 1:
@@ -82,12 +83,46 @@ def browseBySubject(connection, user):
 
     print(str(len(books)) + " books available on this subject.\n")
 
-    for book in books:
-        print("Author: " + book[0])
-        print("Title: " + book[1])
-        print("ISBN: " + book[2])
-        print("Price: " + str(book[3]))
-        print("Subject: " + book[4] + "\n")
+    i = 0
+    while i < len(books):
+        print("Author: " + books[i][0])
+        print("Title: " + books[i][1])
+        print("ISBN: " + books[i][2])
+        print("Price: " + str(books[i][3]))
+        print("Subject: " + books[i][4] + "\n")
+
+        print("Author: " + books[i+1][0])
+        print("Title: " + books[i+1][1])
+        print("ISBN: " + books[i+1][2])
+        print("Price: " + str(books[i+1][3]))
+        print("Subject: " + books[i+1][4] + "\n")
+
+        userInput = input()
+
+        if userInput == 'n':
+            i += 2
+        elif userInput == "":
+            return
+        else:
+            print("isbn123123")
+            addToCart(connection, userId, userInput)
+            break
+
+
+def addToCart(connection, userId, isbn):
+    with connection.cursor() as cursor:
+        # check if book exists
+        checkIfBookExistsQuery = f"""SELECT 1 FROM books WHERE isbn = {isbn}"""
+        cursor.execute(checkIfBookExistsQuery)
+        book = cursor.fetchone()
+        
+        if (book is not None):
+            quantityOfBooks = input("Enter quantity: ")
+            addToCartQuery = f"""INSERT INTO cart (userid, isbn, qty) VALUES ({userId}, {isbn}, {quantityOfBooks})"""
+            cursor.execute(addToCartQuery)
+            connection.commit()
+        else:
+            print("Book with that ISBN does not exist.")
     
 def getBooksBySubject(connection, subject):
     with connection.cursor() as cursor:
@@ -95,9 +130,6 @@ def getBooksBySubject(connection, subject):
         cursor.execute(query)
         books = cursor.fetchall()
         return books
-
-
-    
 
 def getSubject(connection):
     with connection.cursor() as cursor:
