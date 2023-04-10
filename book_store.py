@@ -94,14 +94,16 @@ def searchByAuthorOrTitle(connection, user):
 
     if userInput == 1:
         authorSearch = input("Enter author or part of the author's name: ")
-        books = getBooksByAuthor(connection, authorSearch)
-        showBooksWithOptions(connection, userId, books)
+        authorBooks = getBooksByAuthor(connection, authorSearch)
+        showBooksWithOptions(connection, userId, authorBooks)
     if userInput == 2:
-        
+        titleSearch = input("Enter title or part of the title: ")
+        titleBooks = getBooksByTitle(connection, titleSearch)
+        showBooksWithOptions(connection, userId, titleBooks)
 
 
 def showBooksWithOptions(connection, userId, books):
-    print(str(len(books)) + " books available on this subject.\n")
+    print(str(len(books)) + " books available on this search.\n")
 
     i = 0
     while i < len(books):
@@ -111,11 +113,12 @@ def showBooksWithOptions(connection, userId, books):
         print("Price: " + str(books[i][3]))
         print("Subject: " + books[i][4] + "\n")
 
-        print("Author: " + books[i+1][0])
-        print("Title: " + books[i+1][1])
-        print("ISBN: " + books[i+1][2])
-        print("Price: " + str(books[i+1][3]))
-        print("Subject: " + books[i+1][4] + "\n")
+        if i != len(books) - 1:
+            print("Author: " + books[i+1][0])
+            print("Title: " + books[i+1][1])
+            print("ISBN: " + books[i+1][2])
+            print("Price: " + str(books[i+1][3]))
+            print("Subject: " + books[i+1][4] + "\n")
 
         userInput = input("Enter ISBN to add to cart or n Enter to browse or ENTER to go back to menu: ")
 
@@ -132,6 +135,13 @@ def showBooksWithOptions(connection, userId, books):
 def getBooksByAuthor(connection, author):
     with connection.cursor() as cursor:
         query = f"""SELECT author, title, isbn, price, subject FROM books WHERE author LIKE \"%{author}%\""""
+        cursor.execute(query)
+        books = cursor.fetchall()
+        return books
+    
+def getBooksByTitle(connection, title):
+    with connection.cursor() as cursor:
+        query = f"""SELECT author, title, isbn, price, subject FROM books WHERE title LIKE \"%{title}%\""""
         cursor.execute(query)
         books = cursor.fetchall()
         return books
