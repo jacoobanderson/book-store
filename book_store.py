@@ -87,7 +87,7 @@ def browseBySubject(connection, user):
 def searchByAuthorOrTitle(connection, user):
     print("\n1. Author Search")
     print("2. Title Search")
-    print("3. Go back to Main Menu\n")
+    print("3. Go back to Member Menu\n")
 
     userId = user[8]
     userInput = int(input())
@@ -100,6 +100,8 @@ def searchByAuthorOrTitle(connection, user):
         titleSearch = input("Enter title or part of the title: ")
         titleBooks = getBooksByTitle(connection, titleSearch)
         showBooksWithOptions(connection, userId, titleBooks)
+    if userInput == 3:
+        handleMemberOptions(connection, user)
 
 
 def showBooksWithOptions(connection, userId, books):
