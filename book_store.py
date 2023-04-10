@@ -59,7 +59,7 @@ def showMainMenu():
 
 def showMemberMenu():
     print("1. Browse by Subject\n")
-    print("2. Search by Author\n")
+    print("2. Search by Author/Title\n")
     print("3. Checkout\n")
     print("4. Logout")
 
@@ -70,6 +70,8 @@ def handleMemberOptions(connection, user):
     memberOption = showMemberMenu()
     if memberOption == "1":
         browseBySubject(connection, user)
+    if memberOption == "2":
+        searchByAuthorOrTitle(connection, user)
     if memberOption == "4":
         return 4
     
@@ -80,7 +82,25 @@ def browseBySubject(connection, user):
     userInput = int(input())
     chosenSubject = subjects[userInput][0]
     books = getBooksBySubject(connection, chosenSubject)
+    showBooksWithOptions(connection, userId, books)
 
+def searchByAuthorOrTitle(connection, user):
+    print("\n1. Author Search")
+    print("2. Title Search")
+    print("3. Go back to Main Menu\n")
+
+    userId = user[8]
+    userInput = int(input())
+
+    if userInput == 1:
+        authorSearch = input("Enter author or part of the author's name: ")
+        books = getBooksByAuthor(connection, authorSearch)
+        showBooksWithOptions(connection, userId, books)
+    if userInput == 2:
+        
+
+
+def showBooksWithOptions(connection, userId, books):
     print(str(len(books)) + " books available on this subject.\n")
 
     i = 0
@@ -97,16 +117,24 @@ def browseBySubject(connection, user):
         print("Price: " + str(books[i+1][3]))
         print("Subject: " + books[i+1][4] + "\n")
 
-        userInput = input()
+        userInput = input("Enter ISBN to add to cart or n Enter to browse or ENTER to go back to menu: ")
 
         if userInput == 'n':
             i += 2
         elif userInput == "":
             return
         else:
-            print("isbn123123")
             addToCart(connection, userId, userInput)
             break
+
+
+
+def getBooksByAuthor(connection, author):
+    with connection.cursor() as cursor:
+        query = f"""SELECT author, title, isbn, price, subject FROM books WHERE author LIKE \"%{author}%\""""
+        cursor.execute(query)
+        books = cursor.fetchall()
+        return books
 
 
 def addToCart(connection, userId, isbn):
@@ -136,7 +164,6 @@ def getSubject(connection):
         subjectQuery = """SELECT DISTINCT subject FROM books ORDER BY subject"""
         cursor.execute(subjectQuery)
         subjects = cursor.fetchall()
-        print(subjects)
         return subjects
 
 def showSubjectChoice(subjects):
