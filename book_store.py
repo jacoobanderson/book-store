@@ -1,4 +1,5 @@
 from mysql.connector import connect, Error
+from datetime import datetime, timedelta
 from getpass import getpass
 
 
@@ -72,8 +73,90 @@ def handleMemberOptions(connection, user):
         browseBySubject(connection, user)
     if memberOption == "2":
         searchByAuthorOrTitle(connection, user)
+    if memberOption == "3":
+        checkOut(connection, user)
     if memberOption == "4":
         return 4
+    
+def getCart(connection, userId):
+    with connection.cursor() as cursor:
+        cartQuery = f"""SELECT isbn, qty FROM cart WHERE userid = {userId}"""
+        cursor.execute(cartQuery)
+        cart = cursor.fetchall()
+        return cart
+
+def getPriceAndTitleByIsbn(connection, isbn):
+    with connection.cursor() as cursor:
+        query = f"""SELECT title, price FROM books WHERE isbn = {isbn}"""
+        cursor.execute(query)
+        books = cursor.fetchone()
+        return books
+    
+def checkOut(connection, user):
+    userId = user[8]
+    currentCart = getCart(connection, userId)
+
+    print("Current cart contents: \n")
+    print("ISBN         Title                                                                           Qty     Total")
+    print("----------------------------------------------------------------------------------------------------------")
+
+    totalPrice = 0
+    for book in currentCart:
+        fixed_width = 40
+        priceAndTitle = getPriceAndTitleByIsbn(connection, book[0])
+        totalPrice += priceAndTitle[1]
+        title = priceAndTitle[0]
+        print(str(book[0]) + "       " + f"{title:{fixed_width}}" + "                                      " + str(book[1]) + "    " + str(book[1] * priceAndTitle[1]))
+        print("----------------------------------------------------------------------------------------------------------")
+
+    print("Total                                                                                            " + "$" + str(totalPrice))
+    print("----------------------------------------------------------------------------------------------------------")
+    correctInput = False
+    while correctInput == False:
+        proceedInput = input("\nProceed to check out (Y/N)?: ")
+        if proceedInput.lower() == "y":
+            addOrder(connection, user)
+            correctInput = True
+        if proceedInput.lower() == "n":
+            handleMemberOptions(connection, user)
+            correctInput = True
+
+    
+def addOrder(connection, user):
+    date = datetime.date(datetime.today())
+    dateInOneWeek = datetime.date(datetime.today() + timedelta(days=7))
+    city = user[3]
+    state = user[4]
+    address = user[2]
+    userId = user[8]
+    zip = user[5]
+
+    with connection.cursor() as cursor:
+        addOrderQuery = f"""INSERT INTO orders (userid, recieved, shipped, shipAdress, shipCity, shipState, shipZip)
+        VALUES ({userId}, \"{date}\", \"{dateInOneWeek}\", \"{address}\", \"{city}\", \"{state}\", \"{zip}\")"""
+        cursor.execute(addOrderQuery)
+        connection.commit()
+
+
+def addOdetails(connection, user):
+    # Get ono from order
+    userId = user[8]
+    currentCart = getCart(connection, userId)
+
+    with connection.cursor() as cursor:
+        onoQuery = f"SELECT ono FROM orders WHERE userid = {userId}"
+        cursor.execute(onoQuery)
+        userOnos = cursor.fetchall()
+        ono = userOnos[0]
+
+        for book in currentCart:
+            priceAndTitle = getPriceAndTitleByIsbn(connection, book[0])
+            qty = book[1]
+            isbn = book[0]
+
+            odetailsQuery = f"INSERT INTO odetails (ono, isbn, qty, price) VALUES ({ono}, {isbn}, {qty}, {priceAndTitle[1] * qty})"
+            cursor.execute(odetailsQuery)
+            connection.commit()
     
 def browseBySubject(connection, user):
     userId = user[8]
