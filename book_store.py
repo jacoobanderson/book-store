@@ -71,8 +71,10 @@ def handleMemberOptions(connection, user):
     memberOption = showMemberMenu()
     if memberOption == "1":
         browseBySubject(connection, user)
+        handleMemberOptions(connection, user)
     if memberOption == "2":
         searchByAuthorOrTitle(connection, user)
+        handleMemberOptions(connection, user)
     if memberOption == "3":
         checkOut(connection, user)
     if memberOption == "4":
@@ -104,7 +106,7 @@ def checkOut(connection, user):
     for book in currentCart:
         fixed_width = 40
         priceAndTitle = getPriceAndTitleByIsbn(connection, book[0])
-        totalPrice += priceAndTitle[1]
+        totalPrice += priceAndTitle[1] * book[1]
         title = priceAndTitle[0]
         print(str(book[0]) + "       " + f"{title:{fixed_width}}" + "                                      " + str(book[1]) + "    " + str(book[1] * priceAndTitle[1]))
         print("----------------------------------------------------------------------------------------------------------")
@@ -161,7 +163,7 @@ def showInvoice(connection, user, ono):
     for book in currentCart:
         fixed_width = 40
         priceAndTitle = getPriceAndTitleByIsbn(connection, book[0])
-        totalPrice += priceAndTitle[1]
+        totalPrice += priceAndTitle[1] * book[1]
         title = priceAndTitle[0]
         print(str(book[0]) + "       " + f"{title:{fixed_width}}" + "                                      " + str(book[1]) + "    " + str(book[1] * priceAndTitle[1]))
         print("----------------------------------------------------------------------------------------------------------")
@@ -169,6 +171,7 @@ def showInvoice(connection, user, ono):
     print("Total                                                                                            " + "$" + str(totalPrice))
     print("----------------------------------------------------------------------------------------------------------")
 
+    emptyCart(connection, user)
     print("\n Press enter to go back to menu")
     while input() != "":
         print("Press enter to go back to menu")
@@ -184,7 +187,6 @@ def addOdetails(connection, user):
         userOnos = cursor.fetchall()
         ono = userOnos[0][0]
 
-
         for book in currentCart:
             priceAndTitle = getPriceAndTitleByIsbn(connection, book[0])
             qty = book[1]
@@ -197,6 +199,12 @@ def addOdetails(connection, user):
             connection.commit()
         
         showInvoice(connection, user, ono)
+
+def emptyCart(connection, user):
+    with connection.cursor() as cursor:
+        emptyCartQuery = f"DELETE FROM cart WHERE userid = {user[8]}"
+        cursor.execute(emptyCartQuery)
+        connection.commit()
     
 def browseBySubject(connection, user):
     userId = user[8]
