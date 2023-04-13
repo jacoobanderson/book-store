@@ -116,6 +116,7 @@ def checkOut(connection, user):
         proceedInput = input("\nProceed to check out (Y/N)?: ")
         if proceedInput.lower() == "y":
             addOrder(connection, user)
+            handleMemberOptions(connection, user)
             correctInput = True
         if proceedInput.lower() == "n":
             handleMemberOptions(connection, user)
@@ -136,7 +137,41 @@ def addOrder(connection, user):
         VALUES ({userId}, \"{date}\", \"{dateInOneWeek}\", \"{address}\", \"{city}\", \"{state}\", \"{zip}\")"""
         cursor.execute(addOrderQuery)
         connection.commit()
+    
+    addOdetails(connection, user)
 
+def showInvoice(connection, user, ono):
+    city = user[3]
+    state = user[4]
+    address = user[2]
+    zip = user[5]
+
+    print(f"Invoice for Order no.{ono}")
+    print("Shipping Address")
+    print("Name: " + user[0] + " " + user[1])
+    print(f"Address: {address}\n         {city}\n         {state} {zip}")
+
+
+    userId = user[8]
+    currentCart = getCart(connection, userId)
+    print("ISBN         Title                                                                           Qty     Total")
+    print("----------------------------------------------------------------------------------------------------------")
+
+    totalPrice = 0
+    for book in currentCart:
+        fixed_width = 40
+        priceAndTitle = getPriceAndTitleByIsbn(connection, book[0])
+        totalPrice += priceAndTitle[1]
+        title = priceAndTitle[0]
+        print(str(book[0]) + "       " + f"{title:{fixed_width}}" + "                                      " + str(book[1]) + "    " + str(book[1] * priceAndTitle[1]))
+        print("----------------------------------------------------------------------------------------------------------")
+
+    print("Total                                                                                            " + "$" + str(totalPrice))
+    print("----------------------------------------------------------------------------------------------------------")
+
+    print("\n Press enter to go back to menu")
+    while input() != "":
+        print("Press enter to go back to menu")
 
 def addOdetails(connection, user):
     # Get ono from order
@@ -147,16 +182,21 @@ def addOdetails(connection, user):
         onoQuery = f"SELECT ono FROM orders WHERE userid = {userId}"
         cursor.execute(onoQuery)
         userOnos = cursor.fetchall()
-        ono = userOnos[0]
+        ono = userOnos[0][0]
+
 
         for book in currentCart:
             priceAndTitle = getPriceAndTitleByIsbn(connection, book[0])
             qty = book[1]
             isbn = book[0]
 
-            odetailsQuery = f"INSERT INTO odetails (ono, isbn, qty, price) VALUES ({ono}, {isbn}, {qty}, {priceAndTitle[1] * qty})"
-            cursor.execute(odetailsQuery)
+            odetailsQuery = "INSERT INTO odetails (ono, isbn, qty, price) VALUES (%s, %s, %s, %s)"
+            price = float(priceAndTitle[1]) * qty
+            values = (ono, isbn, qty, price)
+            cursor.execute(odetailsQuery, values)
             connection.commit()
+        
+        showInvoice(connection, user, ono)
     
 def browseBySubject(connection, user):
     userId = user[8]
