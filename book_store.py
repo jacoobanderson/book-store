@@ -40,7 +40,6 @@ def main():
                         menuOption = 0
                     if memberOption == 4:
                         isRunning = False
-                    
 
             if menuOption == "2":
                 createUser(connection)
@@ -55,7 +54,17 @@ def showMainMenu():
     print("2. New Member Registration\n")
     print("q. Quit\n")
 
-    userInput = input()
+    while True:
+        userInput = input()
+        if userInput == "1":
+            break
+        elif userInput == "2":
+            break
+        elif userInput == "q":
+            break
+        else:
+            print("Wrong input, try again")
+
     return userInput
 
 def showMemberMenu():
@@ -64,7 +73,19 @@ def showMemberMenu():
     print("3. Checkout\n")
     print("4. Logout")
 
-    userInput = input()
+    while True:
+        userInput = input()
+        if userInput == "1":
+            break
+        elif userInput == "2":
+            break
+        elif userInput == "3":
+            break
+        elif userInput == "4":
+            break
+        else:
+            print("Wrong input, try again")
+
     return userInput
 
 def handleMemberOptions(connection, user):
@@ -147,11 +168,13 @@ def showInvoice(connection, user, ono):
     state = user[4]
     address = user[2]
     zip = user[5]
+    dateInOneWeek = datetime.date(datetime.today() + timedelta(days=7))
 
-    print(f"Invoice for Order no.{ono}")
+    print(f"\nInvoice for Order no.{ono}")
     print("Shipping Address")
     print("Name: " + user[0] + " " + user[1])
     print(f"Address: {address}\n         {city}\n         {state} {zip}")
+    print(f"Estimated time of delivery {str(dateInOneWeek)}\n")
 
 
     userId = user[8]
@@ -210,8 +233,13 @@ def browseBySubject(connection, user):
     userId = user[8]
     subjects = getSubject(connection)
     showSubjectChoice(subjects)
-    userInput = int(input())
-    chosenSubject = subjects[userInput][0]
+    while True:
+        userInput = int(input())
+        if 1 <= userInput <= len(subjects):
+            break
+        else:
+            print("Wrong input try again")
+    chosenSubject = subjects[userInput - 1][0]
     books = getBooksBySubject(connection, chosenSubject)
     showBooksWithOptions(connection, userId, books)
 
@@ -221,18 +249,24 @@ def searchByAuthorOrTitle(connection, user):
     print("3. Go back to Member Menu\n")
 
     userId = user[8]
-    userInput = int(input())
 
-    if userInput == 1:
-        authorSearch = input("Enter author or part of the author's name: ")
-        authorBooks = getBooksByAuthor(connection, authorSearch)
-        showBooksWithOptions(connection, userId, authorBooks)
-    if userInput == 2:
-        titleSearch = input("Enter title or part of the title: ")
-        titleBooks = getBooksByTitle(connection, titleSearch)
-        showBooksWithOptions(connection, userId, titleBooks)
-    if userInput == 3:
-        handleMemberOptions(connection, user)
+    while True:
+        userInput = int(input())
+        if userInput == 1:
+            authorSearch = input("Enter author or part of the author's name: ")
+            authorBooks = getBooksByAuthor(connection, authorSearch)
+            showBooksWithOptions(connection, userId, authorBooks)
+            break
+        elif userInput == 2:
+            titleSearch = input("Enter title or part of the title: ")
+            titleBooks = getBooksByTitle(connection, titleSearch)
+            showBooksWithOptions(connection, userId, titleBooks)
+            break
+        elif userInput == 3:
+            handleMemberOptions(connection, user)
+            break
+        else:
+            print("Invalid input, Enter a value between 1 and 3")
 
 
 def showBooksWithOptions(connection, userId, books):
